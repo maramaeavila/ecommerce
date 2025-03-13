@@ -1,33 +1,51 @@
 <?php
+include "connection.php";
 session_start();
-include 'connection.php';
 
 $error = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = $_POST['email'];
+    $email = trim($_POST['email']);
     $password = $_POST['password'];
 
-    $stmt = $conn->prepare("SELECT id, username, password FROM users WHERE email = ?");
+    $sql = "SELECT id, name, password, role FROM users WHERE email = ?";
+    $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $email);
     $stmt->execute();
-    $stmt->store_result();
+    $result = $stmt->get_result();
 
-    if ($stmt->num_rows > 0) {
-        $stmt->bind_result($id, $username, $hashed_password);
-        $stmt->fetch();
+    if ($result->num_rows == 1) {
+        $row = $result->fetch_assoc();
 
-        if (password_verify($password, $hashed_password)) {
-            $_SESSION['user_id'] = $id;
-            $_SESSION['username'] = $username;
-            header("Location: dashboard.php");
-            exit();
+        if (password_verify($password, $row['password'])) {
+            $_SESSION['user_id'] = $row['id'];
+            $_SESSION['user_name'] = $row['name'];
+            $_SESSION['user_email'] = $email;
+            $_SESSION['role'] = $row['role'];
+
+            if ($row['role'] === 'admin') {
+                $_SESSION['admin_id'] = $row['id'];
+                $_SESSION['admin_email'] = $email;
+
+                echo "<script>
+                    localStorage.setItem('role', 'admin');
+                    window.location.href = 'admin.php';
+                </script>";
+                exit();
+            } else {
+                echo "<script>
+                    localStorage.setItem('role', 'user');
+                    window.location.href = 'account.php';
+                </script>";
+                exit();
+            }
         } else {
-            $error = "Invalid password!";
+            $error = "Invalid email or password.";
         }
     } else {
-        $error = "No account found. <a href='register.php'>Register here</a>";
+        $error = "No account found with this email.";
     }
+
     $stmt->close();
 }
 ?>
@@ -40,27 +58,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
 
-    <!-- Bootstrap & FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
     <?php include "header.php"; ?>
 
-    <!-- Login Section -->
+    <script>
+        <?php if (!empty($error)): ?>
+            Swal.fire({
+                icon: 'error',
+                title: 'Login Failed',
+                text: '<?php echo $error; ?>',
+                confirmButtonColor: '#d33'
+            });
+        <?php endif; ?>
+    </script>
+
     <section id="login" class="my-5 py-5">
         <div class="container text-center mt-5 pt-5">
             <h2 class="form-weight-bold">Login</h2>
             <hr class="mx-auto">
         </div>
         <div class="mx-auto container">
-            <?php if ($error): ?>
-                <div class="alert alert-danger"><?php echo $error; ?></div>
-            <?php endif; ?>
-
             <form id="login-form" action="login.php" method="POST">
                 <div class="form-group">
                     <label>Email</label>

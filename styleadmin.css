@@ -1,19 +1,24 @@
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+    background-color: #F8FED6;
+}
+
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
     display: flex;
-    background-color: #f4f4f4;
 }
 
 .sidebar {
-    width: 250px;
-    background: #2C3E50;
-    color: white;
+    width: 300px;
+    background: #F8FED6;
+    color: black;
     height: 100vh;
     position: fixed;
     padding: 20px;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 5px 0 10px #EAA79C;
 }
 .sidebar h2 {
     text-align: center;
@@ -27,25 +32,37 @@ body {
 .sidebar ul li {
     padding: 15px;
     margin: 5px 0;
-    background: #34495E;
-    text-align: center;
+    background: #F8FED6;
     transition: 0.3s;
 }
 .sidebar ul li a {
     text-decoration: none;
-    color: white;
+    color: black;
     display: block;
     transition: 0.3s;
 }
 .sidebar ul li:hover,
 .sidebar ul li a.active {
-    background: #1ABC9C;
+    color: #EAA79C;
+}
+
+.sidebar i{
+    margin-right: 10px;
+}
+
+.logout{
+    color: black;
+    margin-top: 80%;
 }
 
 .content {
-    margin-left: 270px;
+    margin-left: 300px;
     padding: 20px;
-    width: calc(100% - 270px);
+    width: calc(100% - 300px);
+    background-color: #F8FED6;
+}
+.content h1{
+    margin: 30px 0 30px;
 }
 .content section {
     display: none;
@@ -59,7 +76,7 @@ table {
     width: 100%;
     border-collapse: collapse;
     background: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px #EAA79C;
     border-radius: 5px;
 }
 th, td {
@@ -68,7 +85,7 @@ th, td {
     border-bottom: 1px solid #ddd;
 }
 th {
-    background: #1ABC9C;
+    background: #EAA79C;
     color: white;
 }
 tr:hover {
@@ -76,7 +93,7 @@ tr:hover {
 }
 
 button {
-    background: #1ABC9C;
+    background: #EAA79C;
     color: white;
     border: none;
     padding: 10px 15px;
@@ -85,8 +102,73 @@ button {
     border-radius: 5px;
 }
 button:hover {
-    background: #16A085;
+    background: #EAA79C;
 }
+
+.pagination {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pagination a {
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 0 5px;
+    text-decoration: none;
+    background-color: #f4f4f4;
+    color: #333;
+    border-radius: 5px;
+    transition: background 0.3s ease-in-out;
+}
+
+.pagination a.active {
+    background-color: #EAA79C;
+    color: white;
+    font-weight: bold;
+}
+
+.pagination a:hover {
+    background-color: #F8FED6;
+    color: black;
+}
+
+.pagination a.disabled {
+    pointer-events: none;
+    background-color: #ccc;
+    color: #666;
+}
+
+.submitbtn{
+    border-radius: 8px;
+    background-color: white; 
+    color: black; 
+    border: 2px solid #EAA79C;
+    padding: 16px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+    width: 20%;
+}
+.submitbtn:hover{
+    background-color: #EAA79C;
+    border: none;
+    color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .pagination a {
+        padding: 6px 10px;
+        font-size: 14px;
+    }
+}
+
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-10px); }

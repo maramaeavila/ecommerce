@@ -5,16 +5,18 @@ include 'connection.php';
 $error = $success = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $contactno = $_POST['contactno'];
-    $address = $_POST['address'];
-    $city = $_POST['city'];
-    $username = $_POST['username'];
+    $name = trim($_POST['name']);
+    $email = trim($_POST['email']);
+    $contactno = trim($_POST['contactno']);
+    $address = trim($_POST['address']);
+    $city = trim($_POST['city']);
+    $username = trim($_POST['username']);
     $password = $_POST['password'];
     $confirmpassword = $_POST['confirmpassword'];
 
-    if ($password !== $confirmpassword) {
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = "Invalid email format!";
+    } elseif ($password !== $confirmpassword) {
         $error = "Passwords do not match!";
     } else {
         $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
@@ -25,19 +27,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($stmt->num_rows > 0) {
             $error = "Email is already registered!";
         } else {
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            $stmt->close();
 
-            $stmt = $conn->prepare("INSERT INTO users (name, email, contactno, address, city, username, password) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("sssssss", $name, $email, $contactno, $address, $city, $username, $hashed_password);
+            $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
+            $stmt->bind_param("s", $username);
+            $stmt->execute();
+            $stmt->store_result();
 
-            if ($stmt->execute()) {
-                $success = "Registration successful! <a href='login.php'>Login here</a>";
+            if ($stmt->num_rows > 0) {
+                $error = "Username is already taken!";
             } else {
-                $error = "Error registering. Please try again.";
+                $stmt->close();
+
+                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                $role = 'user';
+
+                $stmt = $conn->prepare("INSERT INTO users (name, email, contactno, address, city, username, password, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->bind_param("ssssssss", $name, $email, $contactno, $address, $city, $username, $hashed_password, $role);
+
+                if ($stmt->execute()) {
+                    $success = "Registration successful! Redirecting to login...";
+                } else {
+                    $error = "Error registering. Please try again.";
+                }
+                $stmt->close();
             }
         }
-        $stmt->close();
     }
+    $conn->close();
 }
 ?>
 
@@ -53,13 +70,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/sweetalert.js"></script>
 </head>
 
 <body>
 
     <?php include "header.php"; ?>
-
 
     <section id="register" class="my-5 py-5">
         <div class="container text-center mt-5 pt-5">
@@ -67,13 +85,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <hr class="mx-auto">
         </div>
         <div class="mx-auto container">
-            <?php if ($error): ?>
-                <div class="alert alert-danger"><?php echo $error; ?></div>
-            <?php endif; ?>
-            <?php if ($success): ?>
-                <div class="alert alert-success"><?php echo $success; ?></div>
-            <?php endif; ?>
-
             <form id="register-form" action="register.php" method="POST">
                 <div class="form-group">
                     <label for="register-name">Name</label>
@@ -92,7 +103,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 <div class="form-group">
                     <label for="register-address">Address</label>
-                    <input type="text" class="form-control" name="address" maxlength="150" placeholder="Home Address" required>
+                    <input type="text" class="form-control" name="address" maxlength="150" required>
                 </div>
 
                 <div class="form-group">
@@ -125,12 +136,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
     </section>
 
-    <section id="banner">
-        <div>
-            <h2>Get 10% Off Your First Order</h2>
-            <p>Our latest Phone cases offer the perfect blend of style, durability, and protection.</p>
-        </div>
-    </section>
+    <script>
+        <?php if (!empty($success)): ?>
+            showAlert('success', 'Success!', '<?php echo $success; ?>', 'login.php');
+        <?php endif; ?>
+
+        <?php if (!empty($error)): ?>
+            showAlert('error', 'Oops...', '<?php echo $error; ?>');
+        <?php endif; ?>
+    </script>
+
 </body>
 
 </html>
