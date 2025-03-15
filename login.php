@@ -1,6 +1,6 @@
 <?php
-include "connection.php";
 session_start();
+include "connection.php";
 
 $error = "";
 
@@ -106,8 +106,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <section id="banner">
         <div>
-            <h2>Get 10% Off Your First Order</h2>
-            <p>Our latest Phone cases offer the perfect blend of style, durability, and protection.</p>
+
         </div>
     </section>
 </body>

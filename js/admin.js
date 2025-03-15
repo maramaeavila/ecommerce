@@ -40,3 +40,61 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
+
+$(document).ready(function () {
+  $(".add-stock-form").submit(function (event) {
+    event.preventDefault();
+
+    let form = $(this);
+    let formData = form.serialize();
+
+    $.ajax({
+      url: "updatestock.php",
+      type: "POST",
+      data: formData,
+      dataType: "json",
+      success: function (response) {
+        if (response.success) {
+          Swal.fire({
+            title: "Success!",
+            text: response.message,
+            icon: "success",
+            confirmButtonText: "OK",
+          });
+
+          let stockCell = form.closest("tr").find(".stock-value");
+          let currentStock = parseInt(stockCell.text());
+          let addedStock = parseInt(form.find("input[name='new_stock']").val());
+          stockCell.text(currentStock + addedStock);
+
+          form.find("input[name='new_stock']").val("");
+        } else {
+          Swal.fire({
+            title: "Error!",
+            text: response.message,
+            icon: "error",
+            confirmButtonText: "OK",
+          });
+        }
+      },
+    });
+  });
+});
+
+function confirmAdminUpgrade(event, userName, userId) {
+  event.preventDefault();
+
+  Swal.fire({
+    title: "Are you sure?",
+    text: "You are promoting " + userName + " to admin!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Yes, make admin!",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      document.getElementById("makeAdminForm-" + userId).submit();
+    }
+  });
+}

@@ -157,6 +157,21 @@ header p{
     opacity: 0.9;
 }
 
+/* Cart */
+#cart{
+    width: 100%;
+    height: 80vh;
+    margin-top: 10%;
+}
+
+#cart h1{
+    text-align: center;
+    font-family: 'Times New Roman', Times, serif;
+    font-weight: bolder;
+    font-size: 50px;
+    padding: 3%;
+}
+
 /* Categories */
 #categories .one img{
     width: 100%;
@@ -285,6 +300,12 @@ header p{
     color: white;
 }
 
+.btn-stock{
+    background-color: #EAA79C !important;
+    border: 2px #EAA79C !important;
+    color: white !important;
+}
+
 .btn-link{
     color: #EAA79C;
     font-weight: 300;
@@ -313,6 +334,24 @@ th {
 tr:hover {
     background: #f1f1f1;
 }
+
+button {
+    background: #EAA79C;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: 0.3s;
+    border-radius: 5px;
+}
+button:hover {
+    background: #EAA79C;
+}
+
+.left{
+    text-align: left;
+}
+
 
 /* Mobile Responsive Styles */
 @media (max-width: 768px) {

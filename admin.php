@@ -132,7 +132,6 @@ $product_result = $conn->query($product_query);
                 </table>
             </div>
 
-            <!-- Product Pagination -->
             <div class="pagination">
                 <?php if ($page > 1) { ?>
                     <a href="?page=<?= $page - 1 ?>">&laquo; Prev</a>
@@ -174,6 +173,7 @@ $product_result = $conn->query($product_query);
         <section id="addstock">
             <h1>Update Stock</h1>
             <p>Track product stock and restock alerts.</p>
+
             <div style="max-height: 500px; overflow-y: auto;">
                 <table>
                     <thead>
@@ -186,26 +186,65 @@ $product_result = $conn->query($product_query);
                         </tr>
                     </thead>
                     <tbody>
+                        <?php
+                        $limit = 5;
+                        $stock_page = isset($_GET['stock_page']) ? (int)$_GET['stock_page'] : 1;
+                        $offset = ($stock_page - 1) * $limit;
 
+                        $sql = "SELECT id, product_name, stock FROM products ORDER BY stock ASC LIMIT ? OFFSET ?";
+                        $stmt = $conn->prepare($sql);
+                        $stmt->bind_param("ii", $limit, $offset);
+                        $stmt->execute();
+                        $result = $stmt->get_result();
+
+                        if ($result->num_rows > 0) {
+                            while ($row = $result->fetch_assoc()) {
+                                $stock_status = ($row['stock'] > 5) ? '<span class="badge bg-success">In Stock</span>' : '<span class="badge bg-danger">Low Stock</span>';
+
+                                echo '<tr>';
+                                echo '<td>' . $row['id'] . '</td>';
+                                echo '<td>' . htmlspecialchars($row['product_name']) . '</td>';
+                                echo '<td>' . $row['stock'] . '</td>';
+                                echo '<td>' . $stock_status . '</td>';
+                                echo '<td>';
+                                echo '<form action="updatestock.php" method="POST" class="d-flex">';
+                                echo '<input type="hidden" name="product_id" value="' . $row['id'] . '">';
+                                echo '<input type="number" name="new_stock" style="width:100px" class="form-control me-2" min="1" required>';
+                                echo '<button type="submit" class="btn btn-stock">Add Stock</button>';
+                                echo '</form>';
+                                echo '</td>';
+                                echo '</tr>';
+                            }
+                        } else {
+                            echo '<tr><td colspan="5" class="text-center">No products found.</td></tr>';
+                        }
+                        ?>
                     </tbody>
                 </table>
             </div>
 
-            <!-- Pagination for Stock -->
             <div class="pagination">
-                <?php if ($stock_page > 1) { ?>
+                <?php
+                $count_sql = "SELECT COUNT(*) AS total FROM products";
+                $count_result = $conn->query($count_sql);
+                $total_stock = $count_result->fetch_assoc()['total'];
+                $total_stock_pages = ceil($total_stock / $limit);
+                ?>
+
+                <?php if ($stock_page > 1): ?>
                     <a href="?stock_page=<?= $stock_page - 1 ?>">&laquo; Prev</a>
-                <?php } ?>
+                <?php endif; ?>
 
-                <?php for ($i = 1; $i <= $stock_page; $i++) { ?>
+                <?php for ($i = 1; $i <= $total_stock_pages; $i++): ?>
                     <a href="?stock_page=<?= $i ?>" class="<?= ($i == $stock_page) ? 'active' : '' ?>"><?= $i ?></a>
-                <?php } ?>
+                <?php endfor; ?>
 
-                <?php if ($stock_page < $stock_page) { ?>
+                <?php if ($stock_page < $total_stock_pages): ?>
                     <a href="?stock_page=<?= $stock_page + 1 ?>">Next &raquo;</a>
-                <?php } ?>
+                <?php endif; ?>
             </div>
         </section>
+
 
         <section id="users">
             <h1>User Management</h1>
@@ -237,7 +276,6 @@ $product_result = $conn->query($product_query);
                 <?php } ?>
             </table>
 
-            <!-- Pagination for Users -->
             <div class="pagination">
                 <?php if ($user_page > 1) { ?>
                     <a href="?user_page=<?= $user_page - 1 ?>">&laquo; Prev</a>
@@ -386,28 +424,10 @@ $product_result = $conn->query($product_query);
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/admin.js"></script>
     <script src="js/manageprod.js"></script>
-    <script>
-        function confirmAdminUpgrade(event, userName, userId) {
-            event.preventDefault();
-
-            Swal.fire({
-                title: "Are you sure?",
-                text: "You are promoting " + userName + " to admin!",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#3085d6",
-                cancelButtonColor: "#d33",
-                confirmButtonText: "Yes, make admin!"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById("makeAdminForm-" + userId).submit();
-                }
-            });
-        }
-    </script>
 
 </body>
 
